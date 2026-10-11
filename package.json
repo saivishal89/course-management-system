@@ -1,0 +1,32 @@
+{
+  "name": "course-management-system",
+  "version": "1.0.0",
+  "description": "Full-stack Course Management System (CMS) with Student, Teacher, and Admin portals",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "init-db": "node database/initDb.js",
+    "seed": "node database/seed.js"
+  },
+  "keywords": [
+    "cms",
+    "course-management",
+    "lms",
+    "mysql",
+    "express",
+    "nodejs"
+  ],
+  "author": "Sai Vishal",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.9.7"
+  }
+}
