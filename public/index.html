@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduSphere CMS — Course Management System</title>
+  <meta name="description" content="A comprehensive full-stack Course Management System for colleges and training institutes with Student, Teacher, and Admin portals.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="theme-dark">
+
+  <!-- Top Academic Demo Role Switcher Bar -->
+  <div class="demo-bar" id="demoBar">
+    <div class="demo-container">
+      <span class="demo-label">
+        <span class="pulse-dot"></span>
+        <strong>1-Click Demo Persona:</strong>
+      </span>
+      <div class="demo-buttons">
+        <button type="button" class="btn-demo" id="demoAdminBtn" onclick="switchDemoUser('admin@cms.edu')">
+          👨💼 Admin (Director)
+        </button>
+        <button type="button" class="btn-demo" id="demoTeacherBtn" onclick="switchDemoUser('rahul@cms.edu')">
+          👨🏫 Teacher (Prof. Rahul)
+        </button>
+        <button type="button" class="btn-demo" id="demoStudentBtn" onclick="switchDemoUser('alice@student.edu')">
+          👨🎓 Student (Alice Walker)
+        </button>
+      </div>
+      <div class="db-status-badge" id="dbStatusBadge">
+        <span class="db-icon">🗄️</span> MySQL Ready
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group" onclick="navigateHome()">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+            <path d="M6 6h10"></path>
+            <path d="M6 10h10"></path>
+            <path d="m9 16 2 2 4-4"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>EduSphere <span>CMS</span></h1>
+          <span class="brand-sub">Academic Learning Portal</span>
+        </div>
+      </div>
+
+      <nav class="nav-actions">
+        <div class="user-profile-badge hidden" id="userProfileBadge">
+          <div class="user-avatar" id="navUserAvatar">A</div>
+          <div class="user-meta">
+            <span class="user-name" id="navUserName">Loading...</span>
+            <span class="user-role-tag" id="navUserRole">STUDENT</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn-logout hidden" id="logoutBtn" onclick="handleLogout()" title="Log Out">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Sign Out</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-content" id="mainAppContent">
+
+    <!-- 1. AUTHENTICATION VIEW (Logged Out) -->
+    <section class="auth-section" id="authSection">
+      <div class="auth-hero">
+        <div class="hero-chip">✨ College DBMS Project Solution</div>
+        <h2 class="hero-title">Course Management System</h2>
+        <p class="hero-desc">
+          Manage courses, study materials, student enrollments, assignments, and grades all in one place with relational MySQL integrity and role-based access.
+        </p>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="loginTabBtn" onclick="switchAuthTab('login')">Sign In</button>
+          <button class="auth-tab" id="registerTabBtn" onclick="switchAuthTab('register')">Register Student</button>
+        </div>
+
+        <!-- Login Form -->
+        <form class="auth-form" id="loginForm" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group">
+            <label for="loginEmail">Institutional Email</label>
+            <input type="email" id="loginEmail" placeholder="e.g. rahul@cms.edu or alice@student.edu" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn-primary w-full" id="loginSubmitBtn">
+            <span>Sign In to Dashboard</span>
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form class="auth-form hidden" id="registerForm" onsubmit="handleRegisterSubmit(event)">
+          <div class="form-group">
+            <label for="regName">Full Name</label>
+            <input type="text" id="regName" placeholder="e.g. Alex Johnson" required>
+          </div>
+          <div class="form-group">
+            <label for="regEmail">Institutional Email</label>
+            <input type="email" id="regEmail" placeholder="e.g. alex@student.edu" required>
+          </div>
+          <div class="form-group">
+            <label for="regPassword">Password</label>
+            <input type="password" id="regPassword" placeholder="Minimum 6 characters" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label for="regRole">Select Role</label>
+            <select id="regRole">
+              <option value="STUDENT">Student</option>
+              <option value="TEACHER">Teacher</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-primary w-full" id="registerSubmitBtn">
+            <span>Create Account</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 2. STUDENT PORTAL VIEW -->
+    <section class="portal-section hidden" id="studentSection">
+      <div class="portal-header">
+        <div class="portal-title-group">
+          <span class="portal-badge">Student Portal</span>
+          <h2 id="studentWelcomeTitle">Welcome Back, Student</h2>
+        </div>
+        <div class="portal-nav-tabs">
+          <button class="portal-tab active" onclick="switchStudentTab('browse')" id="tabBrowseBtn">
+            📚 Available Courses
+          </button>
+          <button class="portal-tab" onclick="switchStudentTab('my-courses')" id="tabMyCoursesBtn">
+            🎓 My Enrolled Courses
+          </button>
+          <button class="portal-tab" onclick="switchStudentTab('grades')" id="tabGradesBtn">
+            📊 Grades & Marks
+          </button>
+        </div>
+      </div>
+
+      <!-- Student: Browse Courses Tab -->
+      <div class="tab-pane active" id="studentBrowsePane">
+        <div class="pane-header">
+          <h3>Course Catalog</h3>
+          <p>Discover courses offered by teachers and enroll with one click.</p>
+        </div>
+        <div class="course-grid" id="studentBrowseGrid">
+          <!-- Dynamically Populated -->
+        </div>
+      </div>
+
+      <!-- Student: My Courses Tab -->
+      <div class="tab-pane hidden" id="studentMyCoursesPane">
+        <div class="pane-header">
+          <h3>My Active Enrollments</h3>
+          <p>Access study materials, homework assignments, and manage your courses.</p>
+        </div>
+        <div class="course-grid" id="studentMyCoursesGrid">
+          <!-- Dynamically Populated -->
+        </div>
+      </div>
+
+      <!-- Student: Grades & Marks Tab -->
+      <div class="tab-pane hidden" id="studentGradesPane">
+        <div class="pane-header">
+          <h3>My Academic Performance</h3>
+          <p>Review graded assignments, scores, and faculty feedback.</p>
+        </div>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Course</th>
+                <th>Assignment</th>
+                <th>Due Date</th>
+                <th>Submitted On</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Teacher Feedback</th>
+              </tr>
+            </thead>
+            <tbody id="studentGradesTableBody">
+              <!-- Dynamically Populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. TEACHER PORTAL VIEW -->
+    <section class="portal-section hidden" id="teacherSection">
+      <div class="portal-header">
+        <div class="portal-title-group">
+          <span class="portal-badge teacher">Teacher Portal</span>
+          <h2 id="teacherWelcomeTitle">Faculty Workspace</h2>
+        </div>
+        <div class="portal-actions">
+          <button class="btn-action" onclick="openCreateCourseModal()">
+            <span>+ Create Course</span>
+          </button>
+          <button class="btn-action" onclick="openUploadMaterialModal()">
+            <span>📄 Upload Material</span>
+          </button>
+          <button class="btn-action" onclick="openCreateAssignmentModal()">
+            <span>📝 New Assignment</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="teacher-dashboard-layout">
+        <!-- Teacher Courses List -->
+        <div class="dashboard-card full-width">
+          <div class="card-header">
+            <h3>Courses You Teach</h3>
+            <span class="badge" id="teacherCourseCountBadge">0 Courses</span>
+          </div>
+          <div class="course-grid" id="teacherCoursesGrid">
+            <!-- Dynamically Populated -->
+          </div>
+        </div>
+
+        <!-- Submissions & Grading Review Section -->
+        <div class="dashboard-card full-width">
+          <div class="card-header">
+            <h3>Student Submissions to Grade</h3>
+            <div class="filter-group">
+              <label for="teacherAssignmentSelect">Select Assignment:</label>
+              <select id="teacherAssignmentSelect" onchange="loadAssignmentSubmissions(this.value)">
+                <option value="">Select an assignment...</option>
+              </select>
+            </div>
+          </div>
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Student Name</th>
+                  <th>Student Email</th>
+                  <th>Submitted At</th>
+                  <th>Submission / File</th>
+                  <th>Marks</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="teacherSubmissionsTableBody">
+                <tr><td colspan="7" class="text-center text-muted">Select an assignment above to view student submissions.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. ADMIN PORTAL VIEW -->
+    <section class="portal-section hidden" id="adminSection">
+      <div class="portal-header">
+        <div class="portal-title-group">
+          <span class="portal-badge admin">Admin Portal</span>
+          <h2>Institutional Administration</h2>
+        </div>
+        <div class="portal-actions">
+          <button class="btn-action" onclick="openCreateUserModal()">
+            <span>+ Add Student / Teacher</span>
+          </button>
+          <button class="btn-action" onclick="openCreateCourseModal()">
+            <span>+ Create Course</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Stat KPI Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon students">👨🎓</div>
+          <div class="stat-meta">
+            <span class="stat-label">Total Students</span>
+            <span class="stat-value" id="statStudents">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon teachers">👨🏫</div>
+          <div class="stat-meta">
+            <span class="stat-label">Total Teachers</span>
+            <span class="stat-value" id="statTeachers">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon courses">📚</div>
+          <div class="stat-meta">
+            <span class="stat-label">Active Courses</span>
+            <span class="stat-value" id="statCourses">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon enrollments">🎓</div>
+          <div class="stat-meta">
+            <span class="stat-label">Total Enrollments</span>
+            <span class="stat-value" id="statEnrollments">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Management Tabs -->
+      <div class="admin-tabs">
+        <button class="portal-tab active" onclick="switchAdminTab('users')" id="tabAdminUsersBtn">
+          👥 User Management
+        </button>
+        <button class="portal-tab" onclick="switchAdminTab('courses')" id="tabAdminCoursesBtn">
+          📖 Course Management
+        </button>
+      </div>
+
+      <!-- Admin Users Table -->
+      <div class="tab-pane active" id="adminUsersPane">
+        <div class="card-header">
+          <h3>Registered Users Directory</h3>
+          <div class="filter-group">
+            <button class="filter-pill active" onclick="filterAdminUsers('ALL', this)">All</button>
+            <button class="filter-pill" onclick="filterAdminUsers('STUDENT', this)">Students</button>
+            <button class="filter-pill" onclick="filterAdminUsers('TEACHER', this)">Teachers</button>
+            <button class="filter-pill" onclick="filterAdminUsers('ADMIN', this)">Admins</button>
+          </div>
+        </div>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Registered On</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersTableBody">
+              <!-- Dynamically Populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Admin Courses Table -->
+      <div class="tab-pane hidden" id="adminCoursesPane">
+        <div class="card-header">
+          <h3>Institution Courses</h3>
+        </div>
+        <div class="course-grid" id="adminCoursesGrid">
+          <!-- Dynamically Populated -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODALS -->
+
+  <!-- Modal: Course Details (Materials & Assignments) -->
+  <div class="modal-overlay hidden" id="courseDetailsModal">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <div>
+          <span class="modal-tag" id="modalCourseCode">CS301</span>
+          <h3 id="modalCourseTitle">Course Details</h3>
+        </div>
+        <button class="btn-close" onclick="closeModal('courseDetailsModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-course-desc" id="modalCourseDescription"></p>
+        <div class="course-meta-pills">
+          <span class="meta-pill" id="modalCourseTeacher">Instructor: ...</span>
+          <span class="meta-pill" id="modalCourseDuration">Duration: ...</span>
+        </div>
+
+        <div class="modal-sections">
+          <!-- Study Materials Section -->
+          <div class="modal-section">
+            <h4>📁 Study Materials & Notes</h4>
+            <div class="materials-list" id="modalMaterialsList">
+              <!-- Dynamically Populated -->
+            </div>
+          </div>
+
+          <!-- Assignments Section -->
+          <div class="modal-section">
+            <h4>📝 Assignments</h4>
+            <div class="assignments-list" id="modalAssignmentsList">
+              <!-- Dynamically Populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Submit Assignment -->
+  <div class="modal-overlay hidden" id="submitAssignmentModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="submitModalTitle">Submit Assignment</h3>
+        <button class="btn-close" onclick="closeModal('submitAssignmentModal')">&times;</button>
+      </div>
+      <form class="modal-form" id="submitAssignmentForm" onsubmit="handleAssignmentSubmitForm(event)">
+        <input type="hidden" id="submitAssignmentId">
+        <div class="form-group">
+          <label for="submitFile">Upload Assignment File (PDF, DOC, ZIP, Image)</label>
+          <input type="file" id="submitFile" accept=".pdf,.doc,.docx,.zip,.png,.jpg,.txt">
+        </div>
+        <div class="form-group">
+          <label for="submitText">Submission Notes / Link</label>
+          <textarea id="submitText" rows="3" placeholder="Provide notes, explanations, or GitHub repository link..."></textarea>
+        </div>
+        <button type="submit" class="btn-primary w-full">
+          <span>Submit Work</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Grade Submission -->
+  <div class="modal-overlay hidden" id="gradeSubmissionModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Grade Student Submission</h3>
+        <button class="btn-close" onclick="closeModal('gradeSubmissionModal')">&times;</button>
+      </div>
+      <form class="modal-form" id="gradeSubmissionForm" onsubmit="handleGradeSubmit(event)">
+        <input type="hidden" id="gradeSubmissionId">
+        <div class="form-group">
+          <label>Student:</label>
+          <span class="info-pill" id="gradeStudentName">Student Name</span>
+        </div>
+        <div class="form-group">
+          <label for="gradeMarks">Marks / Score (out of 100)</label>
+          <input type="number" id="gradeMarks" min="0" max="100" required placeholder="e.g. 95">
+        </div>
+        <div class="form-group">
+          <label for="gradeFeedback">Faculty Feedback</label>
+          <textarea id="gradeFeedback" rows="3" placeholder="Write constructive feedback for the student..."></textarea>
+        </div>
+        <button type="submit" class="btn-primary w-full">
+          <span>Submit Grade</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Create Course -->
+  <div class="modal-overlay hidden" id="createCourseModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New Course</h3>
+        <button class="btn-close" onclick="closeModal('createCourseModal')">&times;</button>
+      </div>
+      <form class="modal-form" id="createCourseForm" onsubmit="handleCreateCourseSubmit(event)">
+        <div class="form-group">
+          <label for="newCourseName">Course Title</label>
+          <input type="text" id="newCourseName" placeholder="e.g. Operating Systems" required>
+        </div>
+        <div class="form-group">
+          <label for="newCourseCode">Course Code</label>
+          <input type="text" id="newCourseCode" placeholder="e.g. CS302" required>
+        </div>
+        <div class="form-group">
+          <label for="newCourseDuration">Duration</label>
+          <input type="text" id="newCourseDuration" placeholder="e.g. 12 Weeks" value="12 Weeks" required>
+        </div>
+        <div class="form-group" id="courseTeacherSelectGroup">
+          <label for="newCourseTeacher">Assign Teacher</label>
+          <select id="newCourseTeacher">
+            <!-- Populated for Admin -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="newCourseDesc">Course Description</label>
+          <textarea id="newCourseDesc" rows="3" placeholder="Course syllabus and learning objectives..."></textarea>
+        </div>
+        <button type="submit" class="btn-primary w-full">
+          <span>Create Course</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Upload Material -->
+  <div class="modal-overlay hidden" id="uploadMaterialModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Upload Study Material</h3>
+        <button class="btn-close" onclick="closeModal('uploadMaterialModal')">&times;</button>
+      </div>
+      <form class="modal-form" id="uploadMaterialForm" onsubmit="handleUploadMaterialSubmit(event)">
+        <div class="form-group">
+          <label for="materialCourseSelect">Select Course</label>
+          <select id="materialCourseSelect" required>
+            <!-- Populated -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="materialTitle">Material Title</label>
+          <input type="text" id="materialTitle" placeholder="e.g. Chapter 1: Introduction to DBMS" required>
+        </div>
+        <div class="form-group">
+          <label for="materialDesc">Description</label>
+          <input type="text" id="materialDesc" placeholder="e.g. PDF slides and reading references">
+        </div>
+        <div class="form-group">
+          <label for="materialFile">Select File (PDF, Slides, DOC, ZIP)</label>
+          <input type="file" id="materialFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.txt">
+        </div>
+        <button type="submit" class="btn-primary w-full">
+          <span>Upload File</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Create Assignment -->
+  <div class="modal-overlay hidden" id="createAssignmentModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create Assignment</h3>
+        <button class="btn-close" onclick="closeModal('createAssignmentModal')">&times;</button>
+      </div>
+      <form class="modal-form" id="createAssignmentForm" onsubmit="handleCreateAssignmentSubmit(event)">
+        <div class="form-group">
+          <label for="assignCourseSelect">Select Course</label>
+          <select id="assignCourseSelect" required>
+            <!-- Populated -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="assignTitle">Assignment Title</label>
+          <input type="text" id="assignTitle" placeholder="e.g. Assignment 1: SQL Queries & Relational Algebra" required>
+        </div>
+        <div class="form-group">
+          <label for="assignDueDate">Due Date</label>
+          <input type="datetime-local" id="assignDueDate" required>
+        </div>
+        <div class="form-group">
+          <label for="assignMaxMarks">Maximum Marks</label>
+          <input type="number" id="assignMaxMarks" value="100" min="1" max="500" required>
+        </div>
+        <div class="form-group">
+          <label for="assignDesc">Problem Statement / Instructions</label>
+          <textarea id="assignDesc" rows="3" placeholder="Provide assignment questions or instructions..."></textarea>
+        </div>
+        <button type="submit" class="btn-primary w-full">
+          <span>Publish Assignment</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Create User (Admin) -->
+  <div class="modal-overlay hidden" id="createUserModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Add Student or Faculty Member</h3>
+        <button class="btn-close" onclick="closeModal('createUserModal')">&times;</button>
+      </div>
+      <form class="modal-form" id="createUserForm" onsubmit="handleCreateUserSubmit(event)">
+        <div class="form-group">
+          <label for="adminNewUserName">Full Name</label>
+          <input type="text" id="adminNewUserName" placeholder="e.g. Prof. Alan Turing" required>
+        </div>
+        <div class="form-group">
+          <label for="adminNewUserEmail">Email Address</label>
+          <input type="email" id="adminNewUserEmail" placeholder="e.g. alan@cms.edu" required>
+        </div>
+        <div class="form-group">
+          <label for="adminNewUserPassword">Initial Password</label>
+          <input type="password" id="adminNewUserPassword" placeholder="Default: password123" required>
+        </div>
+        <div class="form-group">
+          <label for="adminNewUserRole">Institutional Role</label>
+          <select id="adminNewUserRole" required>
+            <option value="STUDENT">Student</option>
+            <option value="TEACHER">Teacher</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary w-full">
+          <span>Save User</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/studentView.js"></script>
+  <script src="/js/teacherView.js"></script>
+  <script src="/js/adminView.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
