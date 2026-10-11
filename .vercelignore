@@ -1,0 +1,7 @@
+.git
+.github
+tests
+docs
+Dockerfile
+render.yaml
+err.tmp

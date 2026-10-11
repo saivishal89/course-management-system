@@ -15,8 +15,24 @@ const dbConfig = {
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  connectTimeout: 5000
 };
+
+let isInitCalled = false;
+let initPromise = null;
+
+function ensureInitialized() {
+  if (!isInitCalled) {
+    isInitCalled = true;
+    initPromise = initDatabase().catch(err => {
+      console.warn('[Database] Auto-init fallback:', err.message);
+      isConnected = false;
+      if (!fallbackStore) fallbackStore = createFallbackStore();
+    });
+  }
+  return initPromise;
+}
 
 /**
  * In-memory relational storage fallback
@@ -76,13 +92,24 @@ function createFallbackStore() {
  * Initializes database pool and checks connection
  */
 async function initDatabase() {
+  const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+  const isLocalhost = !process.env.DB_HOST || process.env.DB_HOST === 'localhost' || process.env.DB_HOST === '127.0.0.1';
+
+  if (isServerless && isLocalhost) {
+    console.log('[Database] Vercel serverless environment detected without external DB_HOST. Using in-memory fallback store.');
+    isConnected = false;
+    fallbackStore = createFallbackStore();
+    return;
+  }
+
   try {
     // Attempt connecting to MySQL server
     const testConn = await mysql.createConnection({
       host: dbConfig.host,
       user: dbConfig.user,
       password: dbConfig.password,
-      port: dbConfig.port
+      port: dbConfig.port,
+      connectTimeout: 5000
     });
 
     // Create database if not exists
@@ -108,6 +135,10 @@ async function initDatabase() {
  * Executes a SQL query against MySQL or falls back to storage engine
  */
 async function query(sql, params = []) {
+  if (!isInitCalled) {
+    await ensureInitialized();
+  }
+
   if (isConnected && pool) {
     return pool.query(sql, params);
   }
